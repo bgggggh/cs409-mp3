@@ -1,6 +1,15 @@
 // routes/index.js
-module.exports = function (app, router) {
-    app.use('/api', require('./home.js')(router));
-    app.use('/api/users', require('./users.js'));
-    app.use('/api/tasks', require('./tasks.js'));
-  };
+const express = require('express');
+const router = express.Router();
+
+// Import route files
+const usersRouter = require('./users');
+const tasksRouter = require('./tasks');
+const homeRouter = require('./home');
+
+// Use routes
+router.use('/users', usersRouter);
+router.use('/tasks', tasksRouter);
+router.use('/', homeRouter);
+
+module.exports = router;
