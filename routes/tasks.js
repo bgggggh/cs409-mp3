@@ -4,7 +4,6 @@ const Task = require('../models/task');
 const User = require('../models/user');
 const router = express.Router();
 
-// Helper function to parse query parameters
 const parseQueryParams = (query) => {
   const { where, sort, select, skip, limit, count } = query;
   
@@ -35,13 +34,12 @@ const parseQueryParams = (query) => {
   }
   
   parsed.skip = parseInt(skip) || 0;
-  parsed.limit = count === 'true' ? null : (parseInt(limit) || 100); // Default 100 for tasks
+  parsed.limit = count === 'true' ? null : (parseInt(limit) || 100); 
   parsed.count = count === 'true';
   
   return parsed;
 };
 
-// GET /api/tasks - Get all tasks
 router.get('/', async (req, res) => {
   try {
     const { where, sort, select, skip, limit, count } = parseQueryParams(req.query);

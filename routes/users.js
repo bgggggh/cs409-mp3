@@ -4,7 +4,6 @@ const User = require('../models/user');
 const Task = require('../models/task');
 const router = express.Router();
 
-// Helper function to parse query parameters
 const parseQueryParams = (query) => {
   const { where, sort, select, skip, limit, count } = query;
   
@@ -41,7 +40,6 @@ const parseQueryParams = (query) => {
   return parsed;
 };
 
-// GET /api/users - Get all users
 router.get('/', async (req, res) => {
   try {
     const { where, sort, select, skip, limit, count } = parseQueryParams(req.query);
@@ -75,7 +73,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/users - Create new user
 router.post('/', async (req, res) => {
   try {
     const { name, email, pendingTasks } = req.body;
@@ -113,7 +110,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/users/:id - Get user by ID
 router.get('/:id', async (req, res) => {
   try {
     const { select } = parseQueryParams(req.query);
@@ -149,7 +145,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PUT /api/users/:id - Update user
 router.put('/:id', async (req, res) => {
   try {
     const { name, email, pendingTasks } = req.body;
@@ -161,7 +156,6 @@ router.put('/:id', async (req, res) => {
       });
     }
     
-    // First, get the current user to handle task reference updates
     const currentUser = await User.findById(req.params.id);
     if (!currentUser) {
       return res.status(404).json({
@@ -170,9 +164,7 @@ router.put('/:id', async (req, res) => {
       });
     }
     
-    // If pendingTasks is being modified, update the tasks' assigned users
     if (pendingTasks && JSON.stringify(pendingTasks) !== JSON.stringify(currentUser.pendingTasks)) {
-      // Remove this user from previously assigned tasks that are no longer in pendingTasks
       const removedTasks = currentUser.pendingTasks.filter(taskId => 
         !pendingTasks.includes(taskId.toString())
       );
@@ -184,7 +176,6 @@ router.put('/:id', async (req, res) => {
         });
       }
       
-      // Add this user to new tasks in pendingTasks
       const newTasks = pendingTasks.filter(taskId => 
         !currentUser.pendingTasks.includes(taskId)
       );
@@ -234,7 +225,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/users/:id - Delete user
 router.delete('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -246,7 +236,6 @@ router.delete('/:id', async (req, res) => {
       });
     }
     
-    // Unassign all pending tasks
     await Task.updateMany(
       { _id: { $in: user.pendingTasks } },
       {
