@@ -4,7 +4,7 @@ module.exports = function (router) {
     
     homeRoute.get(function (req, res) {
       res.json({ 
-        message: 'Welcome to Llama.io Task Management API',
+        message: 'Welcome to Task Management API',
         data: {
           version: '1.0.0',
           endpoints: ['/api/users', '/api/tasks']

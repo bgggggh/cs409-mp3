@@ -73,7 +73,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/tasks - Create new task
 router.post('/', async (req, res) => {
   try {
     const { name, description, deadline, completed, assignedUser } = req.body;
@@ -87,7 +86,6 @@ router.post('/', async (req, res) => {
     
     let assignedUserName = 'unassigned';
     
-    // If assignedUser is provided, validate and get user name
     if (assignedUser) {
       const user = await User.findById(assignedUser);
       if (!user) {
@@ -110,7 +108,6 @@ router.post('/', async (req, res) => {
     
     const newTask = await task.save();
     
-    // Add task to user's pendingTasks if assigned and not completed
     if (assignedUser && !completed) {
       await User.findByIdAndUpdate(assignedUser, {
         $addToSet: { pendingTasks: newTask._id }
@@ -129,7 +126,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/tasks/:id - Get task by ID
 router.get('/:id', async (req, res) => {
   try {
     const { select } = parseQueryParams(req.query);
@@ -165,7 +161,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PUT /api/tasks/:id - Update task
 router.put('/:id', async (req, res) => {
   try {
     const { name, description, deadline, completed, assignedUser } = req.body;
@@ -188,7 +183,6 @@ router.put('/:id', async (req, res) => {
     let assignedUserName = 'unassigned';
     const previousAssignedUser = currentTask.assignedUser;
     
-    // Handle user assignment changes
     if (assignedUser) {
       const user = await User.findById(assignedUser);
       if (!user) {
@@ -200,31 +194,25 @@ router.put('/:id', async (req, res) => {
       assignedUserName = user.name;
     }
     
-    // If task completion status changed, update user's pendingTasks
     if (completed !== undefined && completed !== currentTask.completed) {
       if (completed && currentTask.assignedUser) {
-        // Task completed - remove from user's pendingTasks
         await User.findByIdAndUpdate(currentTask.assignedUser, {
           $pull: { pendingTasks: req.params.id }
         });
       } else if (!completed && assignedUser) {
-        // Task uncompleted - add to user's pendingTasks
         await User.findByIdAndUpdate(assignedUser, {
           $addToSet: { pendingTasks: req.params.id }
         });
       }
     }
     
-    // Handle user assignment changes
     if (assignedUser !== currentTask.assignedUser?.toString()) {
-      // Remove from previous user's pendingTasks
       if (previousAssignedUser && !currentTask.completed) {
         await User.findByIdAndUpdate(previousAssignedUser, {
           $pull: { pendingTasks: req.params.id }
         });
       }
       
-      // Add to new user's pendingTasks if not completed
       if (assignedUser && !completed) {
         await User.findByIdAndUpdate(assignedUser, {
           $addToSet: { pendingTasks: req.params.id }
@@ -263,7 +251,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/tasks/:id - Delete task
 router.delete('/:id', async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
@@ -275,7 +262,6 @@ router.delete('/:id', async (req, res) => {
       });
     }
     
-    // Remove task from user's pendingTasks
     if (task.assignedUser && !task.completed) {
       await User.findByIdAndUpdate(task.assignedUser, {
         $pull: { pendingTasks: req.params.id }
